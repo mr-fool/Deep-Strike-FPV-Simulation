@@ -1,21 +1,20 @@
 # Deep-Strike FPV Simulation
 
-**Academic Paper:** Beyond the Front Line - Deep-Strike FPV Deployment via Carrier UAVs  
-**Simulation Type:** Monte Carlo Analysis (10,000 iterations per scenario)
+
+**Simulation Type:** Monte Carlo Analysis (10,000 iterations per scenario) 
 
 ---
 
 ## Overview
 
-This simulation models the operational effectiveness of carrier UAVs (motherships) that deploy First-Person View (FPV) drones for deep strike missions. The analysis compares mothership performance across multiple threat scenarios and against traditional strike methods (ground-launched FPV, artillery, precision missiles).
+This simulation models the operational effectiveness of carrier UAVs (motherships) deploying First-Person View (FPV) drones for deep-strike missions. It analyzes the "kill chain" in contested environments, specifically focusing on Anti-Access/Area Denial (A2AD) threats. The analysis compares mothership performance across various threat levels and identifies environmental and tactical sensitivities.
 
 ### Key Features
-- Monte Carlo simulation with 10,000 iterations per scenario
-- Probabilistic modeling using triangular, uniform, and beta distributions
-- 5 operational scenarios (Low/Medium/High Threat, Deep Strike, Saturation)
-- Sensitivity analysis identifying critical parameters
-- Publication-quality visualizations (300 DPI, ready for journal submission)
-- Baseline comparisons with traditional strike methods
+**Stochastic Kill-Chain Modeling:** Uses probabilistic distributions (triangular, beta, uniform) to model detection, attrition, jamming, and lethality.
+**Layered Defense Analysis:** Simulates mission success ($P_S$) and mothership survival ($P_{surv}$) against varied Air Defense (AD) and Electronic Warfare (EW) densities.
+**Environmental Degradation:** Models the impact of wind speed and visibility on FPV flight stability and terminal guidance.
+**Sensitivity Engine:** Utilizes One-At-a-Time (OAT) methodology to isolate critical parameters affecting mission success.
+**Publication-Quality Outputs:** Generates 300 DPI visualizations and statistical summaries ready for journal submission.
 
 ---
 
