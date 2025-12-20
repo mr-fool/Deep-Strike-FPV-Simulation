@@ -4,8 +4,15 @@ Monte Carlo Simulation for Mothership UAV Deep Strike Analysis
 
 
 This simulation models the operational effectiveness of carrier UAVs (motherships)
-deploying FPV drones for deep strike missions, comparing performance across
-threat scenarios and against traditional strike methods.
+deploying FPV drones for deep strike missions in Anti-Access/Area Denial (A2/AD)
+environments, comparing performance across threat scenarios and against traditional
+strike methods.
+
+Key A2/AD Features:
+- Layered air defense penetration modeling
+- Time-based exposure risk in contested airspace
+- Electronic warfare and jamming effects
+- Mission timeline analysis for A2/AD loiter duration
 
 Methodology: Monte Carlo simulation with 10,000 iterations per scenario
 Statistical Approach: Probabilistic parameter modeling using triangular, uniform, and beta distributions
@@ -171,6 +178,61 @@ class MonteCarloSimulation:
         
         return P_detect, P_attrition
     
+    def calculate_mission_timeline(self, scenario: Dict) -> Tuple[float, float, float]:
+        """
+        Calculate mission timeline and A2/AD exposure duration.
+        
+        Critical for A2/AD analysis: longer exposure in contested airspace
+        increases detection and attrition risk.
+        
+        Args:
+            scenario: Scenario parameters
+            
+        Returns:
+            Tuple of (T_transit, T_deployment, T_total) in minutes
+        """
+        target_distance = scenario['target_distance']  # km
+        V_M = scenario['mothership']['V_M']  # km/h
+        N_FPV = scenario['N_FPV']
+        T_launch_seconds = 30  # seconds per FPV deployment
+        
+        # Transit time to FPV release point (assumes 80% of target distance)
+        release_distance = target_distance * 0.8
+        T_transit = (release_distance / V_M) * 60  # Convert to minutes
+        
+        # FPV deployment time (exposure window while releasing drones)
+        T_deployment = (N_FPV * T_launch_seconds) / 60  # Convert to minutes
+        
+        # Total time exposed in A2/AD envelope
+        T_total = T_transit + T_deployment
+        
+        return T_transit, T_deployment, T_total
+    
+    def apply_time_exposure_penalty(self, base_P_attrition: np.ndarray, 
+                                    T_total: float) -> np.ndarray:
+        """
+        Apply time-based attrition penalty for extended A2/AD exposure.
+        
+        Longer loiter times in contested environments increase cumulative
+        detection and engagement opportunities for adversary systems.
+        
+        Model: 1% additional attrition risk per minute of exposure
+        
+        Args:
+            base_P_attrition: Base attrition probability
+            T_total: Total time in A2/AD envelope (minutes)
+            
+        Returns:
+            Modified attrition probability accounting for time exposure
+        """
+        # Time exposure factor: 1% increase per minute
+        exposure_factor = 1.0 + (0.01 * T_total)
+        
+        # Apply factor to attrition (capped at 1.0)
+        P_attrition_modified = np.minimum(1.0, base_P_attrition * exposure_factor)
+        
+        return P_attrition_modified
+    
     def sample_fpv_jamming(self, scenario: Dict) -> np.ndarray:
         """
         Sample FPV jamming probability based on guidance type and EW density.
@@ -287,8 +349,15 @@ class MonteCarloSimulation:
         """
         print(f"Running scenario: {scenario['name']} ({self.n_iterations} iterations)")
         
+        # Calculate mission timeline (A2/AD exposure duration)
+        T_transit, T_deployment, T_total = self.calculate_mission_timeline(scenario)
+        
         # Sample probabilistic parameters
-        P_detect, P_attrition_M = self.sample_mothership_vulnerability(scenario)
+        P_detect, P_attrition_M_base = self.sample_mothership_vulnerability(scenario)
+        
+        # Apply time-based exposure penalty for A2/AD environment
+        P_attrition_M = self.apply_time_exposure_penalty(P_attrition_M_base, T_total)
+        
         P_jamming_FPV = self.sample_fpv_jamming(scenario)
         P_hit, P_kill = self.sample_terminal_effectiveness(scenario, target_type)
         
@@ -301,7 +370,7 @@ class MonteCarloSimulation:
         P_survival = 1 - P_attrition_M
         efficiency = E_K / N_FPV
         
-        # Store results
+        # Store results (including A2/AD time exposure metrics)
         results_df = pd.DataFrame({
             'iteration': np.arange(self.n_iterations),
             'P_detect': P_detect,
@@ -310,6 +379,12 @@ class MonteCarloSimulation:
             'P_hit': P_hit,
             'P_kill': P_kill,
             'P_S': P_S,
+            'P_survival': P_survival,
+            'E_K': E_K,
+            'efficiency': efficiency,
+            'T_transit_min': T_transit,
+            'T_deployment_min': T_deployment,
+            'T_total_A2AD_exposure_min': T_total,
             'P_survival': P_survival,
             'E_K': E_K,
             'efficiency': efficiency
@@ -356,6 +431,11 @@ class MonteCarloSimulation:
             'P_survival_ci_upper': np.percentile(results_df['P_survival'], 97.5),
             
             'efficiency_mean': results_df['efficiency'].mean(),
+            
+            # A2/AD Time Exposure Metrics
+            'T_transit_mean': results_df['T_transit_min'].mean(),
+            'T_deployment_mean': results_df['T_deployment_min'].mean(),
+            'T_total_exposure_mean': results_df['T_total_A2AD_exposure_min'].mean(),
         }
         
         return stats_dict
@@ -469,25 +549,31 @@ class MonteCarloSimulation:
         print(f"Mothership survival probability: {stats['P_survival_mean']:.2f} ", end="")
         print(f"(95% CI: {stats['P_survival_ci_lower']:.2f}-{stats['P_survival_ci_upper']:.2f})")
         
+        print(f"\nA2/AD TIME EXPOSURE ANALYSIS:")
+        print(f"Transit to release point: {stats['T_transit_mean']:.1f} minutes")
+        print(f"FPV deployment time: {stats['T_deployment_mean']:.1f} minutes")
+        print(f"Total A2/AD exposure: {stats['T_total_exposure_mean']:.1f} minutes")
+        print(f"(Time-based attrition penalty: {(stats['T_total_exposure_mean'] * 0.01):.1%})")
+        
         print("\n" + "="*70 + "\n")
 
 
 def main():
     """
-    Main execution function - Phase 1: Scenarios 1-3
+    Main execution function - Phase 1: A2/AD Penetration Scenarios
     """
     print("\n" + "="*70)
-    print("MOTHERSHIP UAV MONTE CARLO SIMULATION - PHASE 1")
-    print("Deep Strike FPV Deployment Analysis")
+    print("MOTHERSHIP UAV A2/AD PENETRATION ANALYSIS")
+    print("Monte Carlo Simulation of Deep Strike in Contested Environments")
     print("="*70 + "\n")
     
     # Initialize simulation
     sim = MonteCarloSimulation(n_iterations=10000, random_seed=42)
     
-    # Define scenarios based on requirements
+    # Define A2/AD scenarios based on threat density
     scenarios = {
         'LOW_THREAT': sim.define_scenario(
-            name='Low Threat',
+            name='Permissive Environment (Minimal A2/AD)',
             rho_AD=0.5,
             rho_EW=0.2,
             V_wind=10,
@@ -497,7 +583,7 @@ def main():
         ),
         
         'MEDIUM_THREAT': sim.define_scenario(
-            name='Medium Threat',
+            name='Contested A2/AD Environment',
             rho_AD=2.0,
             rho_EW=1.0,
             V_wind=15,
@@ -507,7 +593,7 @@ def main():
         ),
         
         'HIGH_THREAT': sim.define_scenario(
-            name='High Threat',
+            name='Denied A2/AD Environment',
             rho_AD=5.0,
             rho_EW=3.0,
             V_wind=25,

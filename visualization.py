@@ -1,15 +1,19 @@
 """
-Visualization Suite for Mothership UAV Simulation
-==================================================
+Visualization Suite for Mothership UAV A2/AD Penetration Analysis
+===================================================================
 
-Generates publication-quality figures for academic paper.
+Generates publication-quality figures for academic paper on deep strike
+operations in Anti-Access/Area Denial (A2/AD) environments.
+
 All figures saved at 300 DPI for journal submission.
 
 Figures generated:
-1. Box plot comparison across scenarios
+1. Box plot comparison across A2/AD threat scenarios
 2. Cumulative Distribution Functions (CDFs)
 3. Baseline comparison bar chart
-4. Convergence analysis
+4. Monte Carlo convergence analysis
+5. Probabilistic parameter distributions
+6. Summary statistics table
 """
 
 import numpy as np
@@ -33,9 +37,9 @@ plt.rcParams['ytick.labelsize'] = 9
 plt.rcParams['legend.fontsize'] = 9
 
 COLORS = {
-    'Low Threat': '#2E86AB',
-    'Medium Threat': '#A23B72',
-    'High Threat': '#F18F01',
+    'Permissive Environment (Minimal A2/AD)': '#2E86AB',
+    'Contested A2/AD Environment': '#A23B72',
+    'Denied A2/AD Environment': '#F18F01',
     'Mothership': '#2E86AB',
     'Ground FPV': '#A23B72',
     'Artillery': '#C73E1D',
@@ -124,10 +128,6 @@ class SimulationVisualizer:
             ax.plot(data_sorted, cdf, linewidth=2.5, 
                    label=scenario, color=COLORS.get(scenario, 'blue'))
         
-        # Add reference lines
-        ax.axvline(x=0.5, color='gray', linestyle='--', alpha=0.5, linewidth=1)
-        ax.axhline(y=0.8, color='gray', linestyle='--', alpha=0.5, linewidth=1)
-        
         ax.set_xlabel('Mission Success Probability ($P_S$)', fontweight='bold')
         ax.set_ylabel('Cumulative Probability', fontweight='bold')
         ax.set_title('Cumulative Distribution of Mission Success Rates', 
@@ -136,11 +136,6 @@ class SimulationVisualizer:
         ax.grid(True, alpha=0.3)
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1)
-        
-        # Add annotation showing 80th percentile interpretation
-        ax.text(0.52, 0.82, '80% of simulations achieve\n$P_S$ ≥ this threshold →',
-               fontsize=8, ha='left', va='bottom',
-               bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.3))
         
         plt.tight_layout()
         
@@ -219,7 +214,7 @@ class SimulationVisualizer:
         
         return fig, (ax1, ax2)
     
-    def plot_convergence_analysis(self, scenario_name: str = 'Medium Threat', 
+    def plot_convergence_analysis(self, scenario_name: str = 'Contested A2/AD Environment', 
                                   save: bool = True):
         """
         Figure 4: Convergence analysis showing stability of Monte Carlo estimates.
@@ -276,7 +271,7 @@ class SimulationVisualizer:
         
         return fig, ax
     
-    def plot_parameter_distributions(self, scenario_name: str = 'Medium Threat',
+    def plot_parameter_distributions(self, scenario_name: str = 'Contested A2/AD Environment',
                                      save: bool = True):
         """
         Figure 5: Distribution of key probabilistic parameters.
