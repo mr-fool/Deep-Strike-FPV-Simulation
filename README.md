@@ -10,11 +10,11 @@
 This simulation models the operational effectiveness of carrier UAVs (motherships) deploying First-Person View (FPV) drones for deep-strike missions. It analyzes the "kill chain" in contested environments, specifically focusing on Anti-Access/Area Denial (A2AD) threats. The analysis compares mothership performance across various threat levels and identifies environmental and tactical sensitivities.
 
 ### Key Features
-**Stochastic Kill-Chain Modeling:** Uses probabilistic distributions (triangular, beta, uniform) to model detection, attrition, jamming, and lethality.
-**Layered Defense Analysis:** Simulates mission success ($P_S$) and mothership survival ($P_{surv}$) against varied Air Defense (AD) and Electronic Warfare (EW) densities.
-**Environmental Degradation:** Models the impact of wind speed and visibility on FPV flight stability and terminal guidance.
-**Sensitivity Engine:** Utilizes One-At-a-Time (OAT) methodology to isolate critical parameters affecting mission success.
-**Publication-Quality Outputs:** Generates 300 DPI visualizations and statistical summaries ready for journal submission.
+* **Stochastic Kill-Chain Modeling:** Uses probabilistic distributions (triangular, beta, uniform) to model detection, attrition, jamming, and lethality.
+* **Layered Defense Analysis:** Simulates mission success ($P_S$) and mothership survival ($P_{surv}$) against varied Air Defense (AD) and Electronic Warfare (EW) densities.
+* **Environmental Degradation:** Models the impact of wind speed and visibility on FPV flight stability and terminal guidance.
+* **Sensitivity Engine:** Utilizes One-At-a-Time (OAT) methodology to isolate critical parameters affecting mission success.
+* **Publication-Quality Outputs:** Generates 300 DPI visualizations and statistical summaries ready for journal submission.
 
 ---
 
