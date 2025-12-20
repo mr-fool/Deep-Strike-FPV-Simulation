@@ -3,7 +3,6 @@
 
 **Simulation Type:** Monte Carlo Analysis (10,000 iterations per scenario) 
 
----
 
 ## Overview
 
@@ -15,6 +14,35 @@ This simulation models the operational effectiveness of carrier UAVs (mothership
 * **Environmental Degradation:** Models the impact of wind speed and visibility on FPV flight stability and terminal guidance.
 * **Sensitivity Engine:** Utilizes One-At-a-Time (OAT) methodology to isolate critical parameters affecting mission success.
 * **Publication-Quality Outputs:** Generates 300 DPI visualizations and statistical summaries ready for journal submission.
+
+## Methodology Summary
+
+The simulation evaluates mission success through a stochastic process across four primary stages of the kill chain:
+
+### 1. Infiltration & Detection ($P_{det}$)
+The probability of the mothership being detected is modeled as a function of operational altitude ($H_M$), the platform's Radar Cross Section ($RCS$), and the density of the Air Defense network ($\rho_{AD}$):
+* **Geometric Horizon:** Detection is constrained by the radar horizon; targets below the horizon have significantly reduced $P_{det}$.
+* **Distribution:** $P_{det}$ is calculated as a logistic sensitivity curve adjusted by atmospheric visibility.
+
+### 2. Mothership Survivability ($P_{surv}$)
+Survival is determined by the platform's ability to withstand layered defense systems once detected:
+* **Strategic Layer:** High-altitude threats (Long-range SAMs).
+* **Tactical Layer:** Low-altitude threats (SHORAD).
+* **Sampling:** Attrition is sampled from a **Triangular Distribution**: $Tri(min, mode, max)$ to account for varying levels of enemy readiness.
+
+### 3. FPV Deployment & Electronic Warfare ($P_{jam}$)
+[cite_start]Mission success relies on the robustness of the FPV guidance link against Electronic Warfare ($\rho_{EW}$):
+* [cite_start]**Signal-to-Jamming Ratio (SJR):** Effectiveness is modeled based on the guidance type:
+    * [cite_start]**Radio:** High susceptibility; sampled from $U(0.5, 0.7)$.
+    * [cite_start]**AI-Autonomous:** Moderate robustness; sampled from $U(0.15, 0.25)$.
+    * [cite_start]**Fiber-Optic:** Near-total immunity; fixed at $0.05$ probability of physical breakage.
+
+### 4. Terminal Engagement ($P_h, P_k$)
+[cite_start]The final stage models the probability of a successful hit ($P_h$) and the lethality of the effect ($P_k$):
+* [cite_start]**Hit Probability:** $P_h$ follows a $Tri(0.5, 0.75, 0.9)$ distribution, with linear degradation for wind speeds $> 20$ km/h.
+* [cite_start]**Kill Probability:** $P_k$ uses a **Beta Distribution** $\text{Beta}(\alpha, \beta)$ tailored to the target profile:
+    * [cite_start]**Armor:** $\alpha=7, \beta=3$ (High-resistance targets).
+    * [cite_start]**Soft Targets:** $\alpha=9, \beta=1$ (High-lethality outcomes).
 
 ---
 
