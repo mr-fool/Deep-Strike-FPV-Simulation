@@ -2,6 +2,9 @@
 Monte Carlo Simulation for Mothership UAV Deep Strike Analysis
 ================================================================
 
+Academic Paper: Breaking the A2/AD Bubble - Deep-Strike FPV Deployment via Carrier UAVs
+Author: [Your Name]
+
 This simulation models the operational effectiveness of carrier UAVs (motherships)
 deploying FPV drones for deep strike missions in Anti-Access/Area Denial (A2/AD)
 environments, comparing performance across threat scenarios and against traditional
@@ -290,11 +293,13 @@ class MonteCarloSimulation:
         
         # Wind degradation for high winds
         if V_wind > 20:
-            wind_factor = 1.0 - 0.01 * V_wind
+            # Linear degradation: 1% per km/h above 20 km/h, with floor at 0.1
+            wind_factor = max(0.1, 1.0 - 0.01 * (V_wind - 20))
             P_hit = P_hit_base * wind_factor
         else:
             P_hit = P_hit_base
         
+        # Ensure P_hit stays in valid range [0, 1]
         P_hit = np.clip(P_hit, 0.0, 1.0)
         
         # Kill probability given hit - Beta distributions
@@ -383,10 +388,7 @@ class MonteCarloSimulation:
             'efficiency': efficiency,
             'T_transit_min': T_transit,
             'T_deployment_min': T_deployment,
-            'T_total_A2AD_exposure_min': T_total,
-            'P_survival': P_survival,
-            'E_K': E_K,
-            'efficiency': efficiency
+            'T_total_A2AD_exposure_min': T_total
         })
         
         results_df['scenario'] = scenario['name']

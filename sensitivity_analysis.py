@@ -61,6 +61,9 @@ class SensitivityAnalyzer:
         for R_M_max in ranges:
             scenario = self.base_scenario.copy()
             scenario['mothership']['R_M_max'] = R_M_max
+            # CRITICAL FIX: Update target_distance to match new range
+            # Default is 60% of max range (same as define_scenario default)
+            scenario['target_distance'] = R_M_max * 0.6
             
             res_df = self.sim.run_scenario(scenario, target_type='armor')
             stats = self.sim.calculate_statistics(res_df)
@@ -73,7 +76,7 @@ class SensitivityAnalyzer:
                 'ci_lower': stats['ci_lower'],
                 'ci_upper': stats['ci_upper']
             })
-            print(f"  R_M_max = {R_M_max} km → P_S = {stats['mean']:.3f}")
+            print(f"  R_M_max = {R_M_max} km (target @ {R_M_max * 0.6:.0f} km) → P_S = {stats['mean']:.3f}")
         
         return pd.DataFrame(results)
     
@@ -335,10 +338,10 @@ class SensitivityAnalyzer:
             ax.text(max_val + 0.01, i, f'{width:.3f}', 
                    va='center', fontsize=9, fontweight='bold')
         
-        # Baseline reference line
-        baseline_P_S = 0.38
+        # Baseline reference line - use actual baseline from scenario
+        baseline_P_S = self.base_scenario.get('baseline_P_S', 0.38)
         ax.axvline(baseline_P_S, color='red', linestyle='--', linewidth=2,
-                  label='Baseline P_S', alpha=0.7)
+                  label=f'Baseline P_S = {baseline_P_S:.3f}', alpha=0.7)
         
         ax.set_yticks(y_pos)
         ax.set_yticklabels(y_labels)
@@ -440,7 +443,16 @@ def main():
         N_FPV=5,
         guidance_type='fiber'
     )
-    base_scenario['baseline_P_S'] = 0.38  # From Phase 1 results
+    
+    # Calculate actual baseline P_S from simulation (not hardcoded)
+    print("\n" + "="*70)
+    print("CALCULATING BASELINE P_S FOR SENSITIVITY ANALYSIS")
+    print("="*70)
+    baseline_df = sim.run_scenario(base_scenario, target_type='armor')
+    baseline_stats = sim.calculate_statistics(baseline_df)
+    baseline_P_S = baseline_stats['mean']
+    base_scenario['baseline_P_S'] = baseline_P_S
+    print(f"Baseline P_S = {baseline_P_S:.4f} (95% CI: {baseline_stats['ci_lower']:.4f}-{baseline_stats['ci_upper']:.4f})")
     
     # Initialize analyzer
     analyzer = SensitivityAnalyzer(base_scenario, n_iterations=10000)

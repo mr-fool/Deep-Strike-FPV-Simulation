@@ -147,7 +147,7 @@ This models the cumulative detection and engagement risk during extended loiter 
 |----------|----------|--------|----------------|---------------|----------------|
 | Permissive | 0.37 | 0.19-0.55 | 1.83 | 0.77 | 37.1 min |
 | Contested | 0.34 | 0.17-0.53 | 1.71 | 0.73 | 37.1 min |
-| Denied | 0.25 | 0.13-0.39 | 1.26 | 0.73 | 37.1 min |
+| Denied | 0.32 | 0.16-0.49 | 1.59 | 0.73 | 37.1 min |
 
 ### Time Exposure Analysis
 
@@ -173,46 +173,6 @@ This models the cumulative detection and engagement risk during extended loiter 
 ---
 
 ## Understanding the Results
-
-### For Your Methodology Section
-
-```
-Monte Carlo simulation with 10,000 iterations per scenario was employed to 
-estimate mission success rates under uncertainty. Probabilistic parameters 
-were modeled using triangular, uniform, and beta distributions based on 
-documented capabilities and operational data from the Russia-Ukraine conflict.
-
-Mission timelines were calculated to account for cumulative detection and 
-engagement risk during A2/AD penetration. Time-based attrition penalties 
-applied a 1% probability increase per minute of exposure in contested 
-airspace, reflecting the reality that extended loiter provides multiple 
-opportunities for adversary detection and engagement.
-```
-
-### For Your Results Section
-
-```
-MISSION SUCCESS PROBABILITY:
-Against contested A2/AD environments (2 AD systems/100km², moderate jamming) 
-representative of Russian deployments in Ukraine, the mothership concept 
-achieved a mean mission success rate of 0.34 (95% CI: 0.17-0.53), compared 
-to 0.65 (95% CI: 0.54-0.77) for ground-launched FPVs.
-
-A2/AD TIME EXPOSURE ANALYSIS:
-Penetration of contested A2/AD environments to 120km targets required mean 
-exposure times of 60.1 minutes, comprising 57.6 minutes transit and 2.5 
-minutes FPV deployment. Extended loiter in defended airspace imposed 
-cumulative detection and engagement opportunities, modeled as a 1% attrition 
-increase per minute, resulting in a 60% time-based penalty applied to base 
-attrition probabilities.
-
-RANGE-TIME TRADE-OFF:
-Shorter-range operations (60km) reduced total A2/AD exposure to 31 minutes, 
-decreasing time-based penalties to 31%. This demonstrates the range-time 
-trade-off inherent in deep strike operations against layered defenses, 
-suggesting mothership platforms are optimized for intermediate-depth targets 
-(60-90km) where extended exposure risk remains acceptable.
-```
 
 ### Critical Insight
 
@@ -269,33 +229,6 @@ The tornado diagram (fig6) and sensitivity curves (fig7) show parameter impacts 
 - 5 FPVs: E[K] = 1.89
 - 10 FPVs: E[K] = 3.77
 - P_S remains constant (~0.38) regardless of payload
-
-### For Discussion Section
-
-```
-SENSITIVITY ANALYSIS INSIGHTS:
-
-Guidance type emerged as the dominant parameter, with fiber-optic control 
-improving mission success probability 237% over radio-controlled systems 
-(P_S = 0.38 vs 0.11) due to reduced jamming vulnerability. This finding 
-underscores the critical importance of jam-resistant communications in 
-A2/AD environments.
-
-Wind conditions above 20 km/h significantly degraded performance, reducing 
-P_S by 30-40%, highlighting the need for weather-dependent mission planning. 
-Air defense density showed moderate sensitivity, with survivability decreasing 
-from 83% in permissive environments to 80% in contested zones.
-
-Surprisingly, mothership operational altitude (1000-3000m) showed minimal 
-direct impact on P_S (<1% variation), suggesting commanders have flexibility 
-in altitude selection based on terrain masking and standoff requirements 
-without sacrificing mission success probability.
-
-The time exposure analysis revealed that payload size creates a tactical 
-dilemma: larger FPV loads (10 vs 5) double strike volume but extend 
-vulnerable deployment time from 2.5 to 5.0 minutes, increasing total A2/AD 
-exposure and cumulative detection risk.
-```
 
 ---
 
@@ -513,9 +446,9 @@ scipy>=1.7.0
 
 ---
 
-## Questions?
+## Key Simulation Components
 
-Key simulation components:
+Reference guide for the codebase:
 
 - **Parameter definitions:** `define_parameters()` function
 - **Probability sampling:** `sample_*()` functions
