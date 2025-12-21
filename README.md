@@ -1,6 +1,5 @@
 # Deep-Strike FPV Simulation - A2/AD Penetration Analysis
 
-**Academic Paper:** Breaking the A2/AD Bubble - Deep-Strike FPV Deployment via Carrier UAVs  
 **Simulation Type:** Monte Carlo Analysis with A2/AD Time Exposure Modeling (10,000 iterations per scenario)
 
 ---
@@ -146,9 +145,9 @@ This models the cumulative detection and engagement risk during extended loiter 
 
 | Scenario | Mean P_S | 95% CI | Expected Kills | Survival Prob | A2/AD Exposure |
 |----------|----------|--------|----------------|---------------|----------------|
-| Permissive | 0.37 | 0.19-0.55 | 1.33 | 0.77 | 34.6 min |
-| Contested | 0.34 | 0.17-0.53 | 1.23 | 0.73 | 60.1 min |
-| Denied | 0.25 | 0.13-0.39 | 0.91 | 0.73 | 60.1 min |
+| Permissive | 0.37 | 0.19-0.55 | 1.83 | 0.77 | 37.1 min |
+| Contested | 0.34 | 0.17-0.53 | 1.71 | 0.73 | 37.1 min |
+| Denied | 0.25 | 0.13-0.39 | 1.26 | 0.73 | 37.1 min |
 
 ### Time Exposure Analysis
 
@@ -266,9 +265,9 @@ The tornado diagram (fig6) and sensitivity curves (fig7) show parameter impacts 
 - Longer range = more exposure time (indirect impact)
 
 **6. FPV Count** (Affects Total Kills, Not P_S)
-- 2 FPVs: E[K] = 0.55
-- 5 FPVs: E[K] = 1.37
-- 10 FPVs: E[K] = 2.74
+- 2 FPVs: E[K] = 0.75
+- 5 FPVs: E[K] = 1.89
+- 10 FPVs: E[K] = 3.77
 - P_S remains constant (~0.38) regardless of payload
 
 ### For Discussion Section
@@ -359,10 +358,10 @@ exposure_factor = 1.0 + (0.005 * T_total)
 The simulation includes built-in validation:
 
 ### 1. Sanity Checks
-- ✓ All probabilities constrained to [0, 1]
-- ✓ Expected kills ≤ Number of FPVs deployed
-- ✓ Detection probability ≤ 1.0
-- ✓ Time exposure ≥ deployment time
+- All probabilities constrained to [0, 1]
+- Expected kills ≤ Number of FPVs deployed
+- Detection probability ≤ 1.0
+- Time exposure ≥ deployment time
 
 ### 2. Convergence Test (fig4)
 - Mean stabilizes after ~2,000 iterations
@@ -490,48 +489,6 @@ for n in fpv_counts:
 
 ---
 
-## Publication Support
-
-### Copy-Paste Ready Abstract Addition
-
-```
-Mission timeline analysis reveals mothership platforms average 60 minutes 
-of exposure during A2/AD penetration to 120km targets, with time-based 
-attrition penalties increasing risk 60% over instantaneous models. Sensitivity 
-analysis identified fiber-optic guidance as the dominant factor (237% improvement 
-over radio control), followed by environmental conditions (wind >20 km/h degrades 
-performance 30%).
-```
-
-### Key Figures for Paper
-
-**Figure 1 (Box Plot):** Shows performance degradation across A2/AD threat levels  
-**Figure 2 (CDF):** Illustrates outcome uncertainty and risk distribution  
-**Figure 3 (Baseline Comparison):** Demonstrates range-effectiveness trade-space  
-**Figure 6 (Tornado):** Identifies guidance type as dominant parameter  
-**Figure 7 (Sensitivity):** Shows wind speed threshold effect at 20-30 km/h  
-
-### Summary Statistics Table
-
-Results automatically formatted in `table1_summary_statistics.png`:
-- Three A2/AD scenarios with 95% confidence intervals
-- Expected kills per mission
-- Mothership survival probability
-- Ready for direct insertion into manuscript
-
----
-
-## Future Enhancements
-
-Planned additions:
-- [ ] Multi-zone A2/AD modeling (outer/middle/inner defense rings)
-- [ ] Dynamic threat reallocation during mission
-- [ ] Route optimization to minimize time in A2/AD zones
-- [ ] Speed-range-payload optimization solver
-- [ ] Integration with SEAD/EW mission planning
-- [ ] Cost-per-kill analysis including mothership attrition
-
----
 
 ## Technical Details
 
@@ -553,17 +510,6 @@ scipy>=1.7.0
 
 **Total runtime:** ~6-12 minutes for complete analysis
 
-### Output Files
-
-**CSV Files:**
-- `mothership_simulation_results.csv` - All iterations, all scenarios (~5 MB)
-- `summary_statistics.csv` - Mean/CI/metrics per scenario (~1 KB)
-- `sensitivity_analysis_results.csv` - Parameter sweep data (~500 KB)
-
-**Figures (300 DPI PNG):**
-- All figures 100-250 KB each
-- Professional quality for journal submission
-- Grayscale-compatible color schemes
 
 ---
 
@@ -581,7 +527,3 @@ Key simulation components:
 For detailed methodology, see inline comments in `mothership_simulation.py`.
 
 ---
-
-## License & Citation
-
-This simulation was developed for academic research. When using in publications, please cite the methodology appropriately and acknowledge the Monte Carlo framework and A2/AD time exposure modeling.
