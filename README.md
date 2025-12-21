@@ -1,18 +1,20 @@
-# Deep-Strike FPV Simulation
+# Deep-Strike FPV Simulation - A2/AD Penetration Analysis
 
-**Academic Paper:** Beyond the Front Line - Deep-Strike FPV Deployment via Carrier UAVs  
-**Simulation Type:** Monte Carlo Analysis (10,000 iterations per scenario)
+**Academic Paper:** Breaking the A2/AD Bubble - Deep-Strike FPV Deployment via Carrier UAVs  
+**Simulation Type:** Monte Carlo Analysis with A2/AD Time Exposure Modeling (10,000 iterations per scenario)
 
 ---
 
 ## Overview
 
-This simulation models the operational effectiveness of carrier UAVs (motherships) that deploy First-Person View (FPV) drones for deep strike missions. The analysis compares mothership performance across multiple threat scenarios and against traditional strike methods (ground-launched FPV, artillery, precision missiles).
+This simulation models the operational effectiveness of carrier UAVs (motherships) that deploy First-Person View (FPV) drones for deep strike missions in Anti-Access/Area Denial (A2/AD) environments. The analysis incorporates mission timeline calculations, time-based exposure risk, and compares mothership performance across threat scenarios and against traditional strike methods.
 
 ### Key Features
 - Monte Carlo simulation with 10,000 iterations per scenario
+- **A2/AD time exposure modeling** - cumulative risk during penetration
+- Mission timeline analysis (transit, deployment, total exposure)
 - Probabilistic modeling using triangular, uniform, and beta distributions
-- 5 operational scenarios (Low/Medium/High Threat, Deep Strike, Saturation)
+- 3 A2/AD threat scenarios (Permissive, Contested, Denied)
 - Sensitivity analysis identifying critical parameters
 - Publication-quality visualizations (300 DPI, ready for journal submission)
 - Baseline comparisons with traditional strike methods
@@ -23,18 +25,18 @@ This simulation models the operational effectiveness of carrier UAVs (mothership
 
 ```
 deep-strike-fpv-simulation/
-├── mothership_simulation.py    # Main Monte Carlo engine (Phase 1)
-├── visualization.py             # Publication figure generation (Phase 2)
-├── sensitivity_analysis.py      # Parameter sensitivity analysis (Phase 3)
+├── mothership_simulation.py    # Main Monte Carlo engine with A2/AD analysis
+├── visualization.py             # Publication figure generation
+├── sensitivity_analysis.py      # Parameter sensitivity analysis
 ├── README.md                    # This file
-├── OUTPUTS/
+├── outputs/
 │   ├── mothership_simulation_results.csv      # Raw iteration data
 │   ├── summary_statistics.csv                 # Summary stats for paper
 │   ├── sensitivity_analysis_results.csv       # Sensitivity data
-│   ├── fig1_scenario_comparison_boxplot.png   # Box plot
+│   ├── fig1_scenario_comparison_boxplot.png   # Box plot across A2/AD scenarios
 │   ├── fig2_cdf_comparison.png                # Cumulative distributions
 │   ├── fig3_baseline_comparison.png           # vs traditional methods
-│   ├── fig4_convergence_analysis.png          # MC convergence
+│   ├── fig4_convergence_analysis.png          # Monte Carlo convergence
 │   ├── fig5_parameter_distributions.png       # Probability distributions
 │   ├── fig6_tornado_diagram.png               # Sensitivity ranking
 │   ├── fig7_sensitivity_curves.png            # Parameter impacts
@@ -48,7 +50,7 @@ deep-strike-fpv-simulation/
 ### 1. Run Complete Analysis (All Phases)
 
 ```bash
-# Phase 1: Core Monte Carlo Simulation (Scenarios 1-3)
+# Phase 1: Core Monte Carlo Simulation with A2/AD Analysis
 python mothership_simulation.py
 
 # Phase 2: Generate Publication Figures
@@ -60,7 +62,7 @@ python sensitivity_analysis.py
 
 ### 2. View Results
 
-All outputs are saved to the current directory:
+All outputs are saved to the `outputs/` directory:
 - **CSV files** - Import into Excel/R/SPSS for further analysis
 - **PNG figures** - 300 DPI, ready for journal submission
 - **Console output** - Copy-paste ready text for methodology/results sections
@@ -78,16 +80,34 @@ P_S = (1 - P_attrition,M) * (1 - P_jamming,FPV) * P_hit * P_kill
 ```
 
 Where:
-- **P_attrition,M** - Probability mothership is destroyed by air defense
+- **P_attrition,M** - Probability mothership is destroyed by air defense (includes time exposure penalty)
 - **P_jamming,FPV** - Probability FPV is jammed/disabled by EW
 - **P_hit** - Probability FPV successfully strikes target
 - **P_kill** - Probability target is destroyed given hit
+
+### A2/AD Time Exposure Model (NEW)
+
+**Mission Timeline:**
+```
+T_total = T_transit + T_deployment
+
+T_transit = (target_distance * 0.8) / V_mothership  # Time to FPV release point
+T_deployment = (N_FPV * 30 seconds) / 60            # Time deploying FPVs
+```
+
+**Time-Based Attrition Penalty:**
+```
+P_attrition_modified = P_attrition_base * (1 + 0.01 * T_total_minutes)
+```
+
+This models the cumulative detection and engagement risk during extended loiter in A2/AD zones. Each minute of exposure increases attrition probability by 1%, reflecting multiple detection opportunities by adversary systems.
 
 ### Probabilistic Models
 
 **Mothership Vulnerability:**
 - Detection: P_detect = min(1.0, 0.3 + 0.4*(H/2000) + 0.3*ρ_AD) * visibility
 - Attrition | detected ~ Triangular(0.05, 0.15, 0.40)
+- Time exposure penalty: +1% per minute in A2/AD envelope
 
 **FPV Jamming:**
 - Radio-controlled: P_jamming ~ Uniform(0.5, 0.7)
@@ -97,70 +117,59 @@ Where:
 **Terminal Effectiveness:**
 - P_hit ~ Triangular(0.5, 0.75, 0.9), adjusted for wind
 - P_kill ~ Beta distributions based on target type:
-  - Armored vehicles: Beta(7, 3) -> mean ~ 0.7
-  - Soft targets: Beta(9, 1) -> mean ~ 0.9
-  - Fortifications: Beta(5, 5) -> mean ~ 0.5
+  - Armored vehicles: Beta(7, 3) → mean ~ 0.7
+  - Soft targets: Beta(9, 1) → mean ~ 0.9
+  - Fortifications: Beta(5, 5) → mean ~ 0.5
 
 ---
 
-## Scenarios Tested
+## A2/AD Scenarios Tested
 
-### Phase 1 Scenarios (Current Implementation)
+### Current Implementation
 
-| Scenario | AD Density | EW Density | Wind | Visibility | Purpose |
-|----------|-----------|-----------|------|------------|---------|
-| **Low Threat** | 0.5/100km² | 0.2/50km² | 10 km/h | Clear | Baseline capability |
-| **Medium Threat** | 2.0/100km² | 1.0/50km² | 15 km/h | Clear | Realistic operations |
-| **High Threat** | 5.0/100km² | 3.0/50km² | 25 km/h | Hazy | Survivability test |
+| Scenario | AD Density | EW Density | Wind | Visibility | A2/AD Classification |
+|----------|-----------|-----------|------|------------|---------------------|
+| **Permissive Environment** | 0.5/100km² | 0.2/50km² | 10 km/h | Clear | Minimal A2/AD |
+| **Contested A2/AD** | 2.0/100km² | 1.0/50km² | 15 km/h | Clear | Typical Russian deployment |
+| **Denied A2/AD** | 5.0/100km² | 3.0/50km² | 25 km/h | Hazy | Near-peer saturation |
 
-### Phase 4 Scenarios (Future Implementation)
-
-- **Deep Strike** - Target at maximum range (120 km)
-- **Saturation Attack** - Multiple targets, maximum FPV load
+**Representative Conditions:**
+- Permissive: Limited air defense, minimal jamming (e.g., rear areas, low-intensity conflict)
+- Contested: Moderate A2/AD density representative of Russian deployments in Ukraine
+- Denied: Dense, integrated A2/AD networks (e.g., peer adversary homeland defense)
 
 ---
 
-## Modifying Parameters
+## Key Results Summary
 
-### Example: Change Mothership Range
+### Mission Success Probability
 
-Edit `mothership_simulation.py`:
+| Scenario | Mean P_S | 95% CI | Expected Kills | Survival Prob | A2/AD Exposure |
+|----------|----------|--------|----------------|---------------|----------------|
+| Permissive | 0.37 | 0.19-0.55 | 1.33 | 0.77 | 34.6 min |
+| Contested | 0.34 | 0.17-0.53 | 1.23 | 0.73 | 60.1 min |
+| Denied | 0.25 | 0.13-0.39 | 0.91 | 0.73 | 60.1 min |
 
-```python
-# Find define_parameters() function, modify:
-'mothership': {
-    'R_M_max': 150,  # Change from 120 to 150 km
-    'V_M': 100,
-    'H_M_op': 2000,
-    # ...
-}
-```
+### Time Exposure Analysis
 
-### Example: Add New Scenario
+**Typical 120km Mission (Contested A2/AD):**
+- Transit to release point: **57.6 minutes**
+- FPV deployment time: **2.5 minutes** (5 FPVs @ 30 sec each)
+- **Total A2/AD exposure: 60.1 minutes**
+- Time-based attrition penalty: **+60%**
 
-```python
-scenarios = {
-    'CUSTOM': sim.define_scenario(
-        name='Custom Scenario',
-        rho_AD=3.0,              # Your AD density
-        rho_EW=2.0,              # Your EW density
-        V_wind=20,               # Your wind speed
-        visibility=0.85,         # Your visibility
-        N_FPV=7,                 # Your FPV count
-        guidance_type='ai'       # 'radio', 'fiber', or 'ai'
-    ),
-}
-```
+**Key Insight:** Extended loiter in contested airspace significantly increases cumulative detection risk, with time penalty growing linearly (1% per minute).
 
-### Example: Change Number of Iterations
+### Range vs. Time Trade-off
 
-```python
-# Modify in main():
-sim = MonteCarloSimulation(n_iterations=5000, random_seed=42)
-```
+| Target Distance | Transit Time | Total Exposure | Cumulative Penalty |
+|----------------|--------------|----------------|-------------------|
+| 60 km | 28.8 min | 31.3 min | +31% attrition |
+| 90 km | 43.2 min | 45.7 min | +46% attrition |
+| 120 km | 57.6 min | 60.1 min | +60% attrition |
+| 150 km | 72.0 min | 74.5 min | +75% attrition |
 
-**Note:** 10,000 iterations ensure stable results (standard for Monte Carlo).  
-Reducing to 5,000 speeds up testing but increases variance.
+**Operational Implication:** Deeper targets impose significantly higher time-based risk. Optimal engagement range is 60-90 km for acceptable exposure duration.
 
 ---
 
@@ -168,61 +177,179 @@ Reducing to 5,000 speeds up testing but increases variance.
 
 ### For Your Methodology Section
 
-Use the console output directly:
-
 ```
-"Monte Carlo simulation with 10,000 iterations per scenario was employed 
-to estimate mission success rates under uncertainty. Probabilistic parameters 
+Monte Carlo simulation with 10,000 iterations per scenario was employed to 
+estimate mission success rates under uncertainty. Probabilistic parameters 
 were modeled using triangular, uniform, and beta distributions based on 
-literature estimates and operational data from the Russia-Ukraine conflict."
+documented capabilities and operational data from the Russia-Ukraine conflict.
+
+Mission timelines were calculated to account for cumulative detection and 
+engagement risk during A2/AD penetration. Time-based attrition penalties 
+applied a 1% probability increase per minute of exposure in contested 
+airspace, reflecting the reality that extended loiter provides multiple 
+opportunities for adversary detection and engagement.
 ```
 
 ### For Your Results Section
 
-The simulation outputs paper-ready statistics:
-
 ```
-"Under medium threat conditions, the mothership concept achieved a mean 
-mission success rate of 0.38 (95% CI: 0.20-0.56), compared to 0.65 
-(95% CI: 0.54-0.77) for ground-launched FPVs."
+MISSION SUCCESS PROBABILITY:
+Against contested A2/AD environments (2 AD systems/100km², moderate jamming) 
+representative of Russian deployments in Ukraine, the mothership concept 
+achieved a mean mission success rate of 0.34 (95% CI: 0.17-0.53), compared 
+to 0.65 (95% CI: 0.54-0.77) for ground-launched FPVs.
+
+A2/AD TIME EXPOSURE ANALYSIS:
+Penetration of contested A2/AD environments to 120km targets required mean 
+exposure times of 60.1 minutes, comprising 57.6 minutes transit and 2.5 
+minutes FPV deployment. Extended loiter in defended airspace imposed 
+cumulative detection and engagement opportunities, modeled as a 1% attrition 
+increase per minute, resulting in a 60% time-based penalty applied to base 
+attrition probabilities.
+
+RANGE-TIME TRADE-OFF:
+Shorter-range operations (60km) reduced total A2/AD exposure to 31 minutes, 
+decreasing time-based penalties to 31%. This demonstrates the range-time 
+trade-off inherent in deep strike operations against layered defenses, 
+suggesting mothership platforms are optimized for intermediate-depth targets 
+(60-90km) where extended exposure risk remains acceptable.
 ```
 
-### Key Findings
+### Critical Insight
 
-**Important Insight:**  
-The mothership shows **lower P_S** than ground-launched FPVs but offers **16x range extension** (130 km vs 8 km). This is the strategic value proposition - enabling deep strikes beyond direct fire range.
+**Strategic Trade-off:**  
+The mothership shows **lower P_S** than ground-launched FPVs (0.34 vs 0.65) but offers **16x range extension** (130 km vs 8 km). The value proposition is **operational reach** enabling strikes against high-value targets beyond direct fire range, not higher success probability.
 
-**Trade-off:**
-- Ground FPV: Higher P_S (~0.65), limited range (8 km)
-- Mothership: Lower P_S (~0.38), extended range (130 km)
-- Artillery: Medium P_S (~0.40), medium range (30 km)
-- Missiles: High P_S (~0.85), longest range (70 km), high cost
+**Time-Speed-Payload Trade-off:**
+- Faster motherships (150 km/h vs 100 km/h) reduce A2/AD exposure 33%
+- Larger payloads (10 FPVs) increase deployment time, extending exposure 2 minutes
+- Deeper targets (150 km) impose 75-minute exposure, 75% attrition penalty
+
+**Comparison to Traditional Methods:**
+- Ground FPV: Higher P_S (~0.65), limited range (8 km), no A2/AD penetration
+- Mothership: Medium P_S (~0.34), extended range (130 km), 60-min A2/AD exposure
+- Artillery: Medium P_S (~0.40), medium range (30 km), reveals battery position
+- Missiles: High P_S (~0.85), longest range (70 km), high cost ($150k/round)
 
 ---
 
 ## Sensitivity Analysis Results
 
-The tornado diagram (fig6) shows which parameters most impact P_S:
+The tornado diagram (fig6) and sensitivity curves (fig7) show parameter impacts on P_S:
 
-**Most Sensitive Parameters (from Phase 3):**
-1. Guidance Type (Radio vs Fiber vs AI)
-2. Air Defense Density (ρ_AD)
-3. Operational Altitude
+### Most Critical Parameters
 
-**Less Sensitive Parameters:**
-4. Wind Speed (only affects hit probability)
-5. Mothership Range (doesn't directly affect P_S)
-6. FPV Count (affects total kills, not individual P_S)
+**1. Guidance Type** (Dominant Factor)
+- Radio-controlled: P_S = 0.11 (heavy jamming vulnerability)
+- **Fiber-optic: P_S = 0.38** (jam-resistant, baseline)
+- AI-enabled: P_S = 0.31 (moderate jamming)
+- **Impact: 237% improvement** (fiber vs radio)
+
+**2. Wind Speed** (Environmental)
+- 0-20 km/h: P_S ≈ 0.38 (stable performance)
+- 30 km/h: P_S = 0.26 (degraded, 30% reduction)
+- 40 km/h: P_S = 0.23 (severe degradation)
+
+**3. Air Defense Density** (Moderate Impact)
+- Low (0.5/100km²): P_S = 0.39, Survival = 0.83
+- Medium (2.0/100km²): P_S = 0.38, Survival = 0.80
+- High (5.0/100km²): P_S = 0.38, Survival = 0.80
+
+### Less Sensitive Parameters
+
+**4. Operational Altitude** (Minimal Direct Impact)
+- 1000m to 3000m: P_S varies by <1%
+- Higher altitude increases detection but improves standoff
+
+**5. Mothership Range** (No Direct Impact on P_S)
+- Affects mission feasibility, not individual success rate
+- Longer range = more exposure time (indirect impact)
+
+**6. FPV Count** (Affects Total Kills, Not P_S)
+- 2 FPVs: E[K] = 0.55
+- 5 FPVs: E[K] = 1.37
+- 10 FPVs: E[K] = 2.74
+- P_S remains constant (~0.38) regardless of payload
 
 ### For Discussion Section
 
 ```
-"Sensitivity analysis revealed that FPV guidance type and air defense 
-density were the most critical parameters affecting mission success. 
-Fiber-optic guidance improved P_S by 45% over radio-controlled systems 
-due to reduced jamming vulnerability. Mothership operational altitude 
-showed moderate sensitivity, with higher altitudes increasing detection 
-probability but improving standoff distance."
+SENSITIVITY ANALYSIS INSIGHTS:
+
+Guidance type emerged as the dominant parameter, with fiber-optic control 
+improving mission success probability 237% over radio-controlled systems 
+(P_S = 0.38 vs 0.11) due to reduced jamming vulnerability. This finding 
+underscores the critical importance of jam-resistant communications in 
+A2/AD environments.
+
+Wind conditions above 20 km/h significantly degraded performance, reducing 
+P_S by 30-40%, highlighting the need for weather-dependent mission planning. 
+Air defense density showed moderate sensitivity, with survivability decreasing 
+from 83% in permissive environments to 80% in contested zones.
+
+Surprisingly, mothership operational altitude (1000-3000m) showed minimal 
+direct impact on P_S (<1% variation), suggesting commanders have flexibility 
+in altitude selection based on terrain masking and standoff requirements 
+without sacrificing mission success probability.
+
+The time exposure analysis revealed that payload size creates a tactical 
+dilemma: larger FPV loads (10 vs 5) double strike volume but extend 
+vulnerable deployment time from 2.5 to 5.0 minutes, increasing total A2/AD 
+exposure and cumulative detection risk.
+```
+
+---
+
+## Modifying Parameters
+
+### Example: Change Target Distance (Affects Time Exposure)
+
+Edit `mothership_simulation.py`:
+
+```python
+# Find define_parameters() function, modify:
+'target_distance': 90,  # Change from 120 to 90 km
+# This reduces transit time and A2/AD exposure
+```
+
+### Example: Add New A2/AD Scenario
+
+```python
+scenarios = {
+    'CUSTOM': sim.define_scenario(
+        name='Custom A2/AD Environment',
+        rho_AD=3.5,              # Your AD density
+        rho_EW=2.0,              # Your EW density
+        V_wind=20,               # Your wind speed
+        visibility=0.85,         # Your visibility
+        N_FPV=7,                 # Your FPV count
+        guidance_type='fiber'    # 'radio', 'fiber', or 'ai'
+    ),
+}
+```
+
+### Example: Test Faster Mothership (Reduces Exposure)
+
+```python
+'mothership': {
+    'R_M_max': 120,
+    'V_M': 150,  # Change from 100 to 150 km/h
+    # This reduces transit time by 33%, lowering time penalty
+}
+```
+
+### Example: Change Time Penalty Model
+
+```python
+# In apply_time_exposure_penalty() function:
+# Current: 1% per minute
+exposure_factor = 1.0 + (0.01 * T_total)
+
+# More aggressive: 2% per minute
+exposure_factor = 1.0 + (0.02 * T_total)
+
+# Conservative: 0.5% per minute
+exposure_factor = 1.0 + (0.005 * T_total)
 ```
 
 ---
@@ -232,119 +359,177 @@ probability but improving standoff distance."
 The simulation includes built-in validation:
 
 ### 1. Sanity Checks
--  All probabilities constrained to [0, 1]
--  Expected kills <= Number of FPVs deployed
--  Detection probability <= 1.0
+- ✓ All probabilities constrained to [0, 1]
+- ✓ Expected kills ≤ Number of FPVs deployed
+- ✓ Detection probability ≤ 1.0
+- ✓ Time exposure ≥ deployment time
 
 ### 2. Convergence Test (fig4)
 - Mean stabilizes after ~2,000 iterations
 - 10,000 iterations ensures robust results
+- 95% confidence intervals narrow appropriately
 
 ### 3. Statistical Verification
 - 95% confidence intervals calculated
-- Results reproducible (fixed random seed)
+- Results reproducible (fixed random seed = 42)
+- Time metrics consistent across scenarios
+
+### 4. Physical Realism Checks
+- Transit time matches distance/speed calculations
+- Deployment time = 30 sec/FPV (realistic mechanical constraint)
+- Time penalties scale linearly with exposure duration
 
 ---
 
 ## Troubleshooting
 
-### Issue: Results seem unrealistic
+### Issue: Time exposure seems too high/low
 
-**Solution:** Check baseline parameters against literature:
-- Compare P_S to historical FPV strike data
-- Verify AD density matches theater intelligence
-- Ensure distributions match documented capabilities
-
-### Issue: Want to test extreme scenarios
-
-**Solution:** Create custom scenario with modified parameters:
+**Check:**
 ```python
-# Example: Very high threat
+# Verify target distance
+scenario['target_distance']  # Should be 60-150 km range
+
+# Verify mothership speed
+scenario['mothership']['V_M']  # Should be 80-150 km/h
+
+# Calculate expected transit
+expected_transit = (distance * 0.8) / speed * 60  # minutes
+```
+
+### Issue: Want to test extreme A2/AD conditions
+
+**Solution:** Create high-threat scenario:
+```python
 scenario = sim.define_scenario(
-    name='Extreme Threat',
-    rho_AD=10.0,    # Very dense AD
+    name='Extreme A2/AD Saturation',
+    rho_AD=10.0,    # Very dense AD (peer adversary core)
     rho_EW=5.0,     # Heavy jamming
     V_wind=50,      # Storm conditions
-    visibility=0.3  # Poor visibility
+    visibility=0.3, # Poor visibility
+    guidance_type='radio'  # Worst case
 )
 ```
 
-### Issue: Need more detailed output
+### Issue: Need iteration-level time data
 
-**Solution:** Access iteration-level data:
+**Solution:** Access detailed results:
 ```python
-# After running simulation:
-results_df = pd.read_csv('mothership_simulation_results.csv')
+results_df = pd.read_csv('outputs/mothership_simulation_results.csv')
 
-# Filter specific scenario
-medium_threat = results_df[results_df['scenario'] == 'Medium Threat']
+# Analyze time distributions
+print(results_df[['T_transit_min', 'T_deployment_min', 
+                  'T_total_A2AD_exposure_min']].describe())
 
-# Analyze distributions
-print(medium_threat['P_S'].describe())
-print(medium_threat[['P_attrition_M', 'P_jamming_FPV', 'P_hit']].corr())
+# Plot time vs success
+import matplotlib.pyplot as plt
+plt.scatter(results_df['T_total_A2AD_exposure_min'], 
+            results_df['P_S'])
+plt.xlabel('Total A2/AD Exposure (minutes)')
+plt.ylabel('Mission Success Probability')
+plt.show()
 ```
 
 ---
 
 ## Advanced Usage
 
-### Custom Probability Distributions
-
-Modify sampling functions in `mothership_simulation.py`:
+### Analyze Time-Success Correlation
 
 ```python
-# Example: Change from Triangular to Normal distribution
-def sample_terminal_effectiveness(self, scenario: Dict):
-    # Original:
-    # P_hit_base = np.random.triangular(0.5, 0.75, 0.9, self.n_iterations)
-    
-    # New - Normal distribution:
-    P_hit_base = np.random.normal(0.75, 0.1, self.n_iterations)
-    P_hit_base = np.clip(P_hit_base, 0.0, 1.0)  # Constrain to [0,1]
-    # ...
+import pandas as pd
+import scipy.stats as stats
+
+results = pd.read_csv('outputs/mothership_simulation_results.csv')
+
+# Does longer exposure correlate with lower success?
+correlation = stats.pearsonr(results['T_total_A2AD_exposure_min'], 
+                             results['P_S'])
+print(f"Time-Success Correlation: {correlation[0]:.3f}, p={correlation[1]:.4f}")
+
+# Expected: Negative correlation (more time = higher attrition = lower P_S)
 ```
 
-### Multiple Random Seeds
-
-Test result stability:
+### Compare Speed Scenarios
 
 ```python
-seeds = [42, 123, 456, 789, 1011]
-for seed in seeds:
-    sim = MonteCarloSimulation(n_iterations=10000, random_seed=seed)
-    # Run scenarios and compare results
+# Run same scenario with different speeds
+speeds = [80, 100, 120, 150]
+results = {}
+
+for speed in speeds:
+    scenario['mothership']['V_M'] = speed
+    df = sim.run_scenario(scenario)
+    results[speed] = {
+        'mean_P_S': df['P_S'].mean(),
+        'mean_exposure': df['T_total_A2AD_exposure_min'].mean()
+    }
+
+# Plot speed-exposure-success relationship
 ```
 
-Results should vary by <±0.02 between seeds.
+### Optimize Payload Size
+
+```python
+# Find optimal FPV count balancing kills vs exposure
+fpv_counts = range(2, 11)
+results = []
+
+for n in fpv_counts:
+    scenario['N_FPV'] = n
+    df = sim.run_scenario(scenario)
+    results.append({
+        'N_FPV': n,
+        'E_K': df['E_K'].mean(),
+        'T_deployment': df['T_deployment_min'].mean(),
+        'kills_per_minute': df['E_K'].mean() / df['T_deployment_min'].mean()
+    })
+
+# Identify diminishing returns point
+```
 
 ---
 
-## Citation
+## Publication Support
 
-When using this simulation in your paper, consider citing the methodology:
+### Copy-Paste Ready Abstract Addition
 
 ```
-The Monte Carlo simulation employed 10,000 iterations per scenario 
-to estimate mission success probability distributions. Probabilistic 
-parameters were modeled using triangular distributions for terminal 
-effectiveness (P_hit ~ Tri(0.5, 0.75, 0.9)), beta distributions for 
-kill probability (P_kill ~ Beta(α,β) varying by target type), and 
-uniform distributions for jamming susceptibility based on guidance 
-type. Sensitivity analysis used one-at-a-time (OAT) methodology to 
-isolate parameter impacts.
+Mission timeline analysis reveals mothership platforms average 60 minutes 
+of exposure during A2/AD penetration to 120km targets, with time-based 
+attrition penalties increasing risk 60% over instantaneous models. Sensitivity 
+analysis identified fiber-optic guidance as the dominant factor (237% improvement 
+over radio control), followed by environmental conditions (wind >20 km/h degrades 
+performance 30%).
 ```
+
+### Key Figures for Paper
+
+**Figure 1 (Box Plot):** Shows performance degradation across A2/AD threat levels  
+**Figure 2 (CDF):** Illustrates outcome uncertainty and risk distribution  
+**Figure 3 (Baseline Comparison):** Demonstrates range-effectiveness trade-space  
+**Figure 6 (Tornado):** Identifies guidance type as dominant parameter  
+**Figure 7 (Sensitivity):** Shows wind speed threshold effect at 20-30 km/h  
+
+### Summary Statistics Table
+
+Results automatically formatted in `table1_summary_statistics.png`:
+- Three A2/AD scenarios with 95% confidence intervals
+- Expected kills per mission
+- Mothership survival probability
+- Ready for direct insertion into manuscript
 
 ---
 
-## Future Enhancements (Phase 4+)
+## Future Enhancements
 
-Planned features for next iteration:
-- [ ] Deep Strike scenario (maximum range operations)
-- [ ] Saturation Attack scenario (multiple simultaneous targets)
-- [ ] Route optimization using Dijkstra/A* algorithms
-- [ ] Multi-target engagement sequencing
-- [ ] Cost-effectiveness analysis
-- [ ] Monte Carlo variance reduction techniques
+Planned additions:
+- [ ] Multi-zone A2/AD modeling (outer/middle/inner defense rings)
+- [ ] Dynamic threat reallocation during mission
+- [ ] Route optimization to minimize time in A2/AD zones
+- [ ] Speed-range-payload optimization solver
+- [ ] Integration with SEAD/EW mission planning
+- [ ] Cost-per-kill analysis including mothership attrition
 
 ---
 
@@ -358,32 +543,45 @@ pandas>=1.3.0
 matplotlib>=3.4.0
 seaborn>=0.11.0
 scipy>=1.7.0
-openpyxl>=3.0.0  # For Excel file reading
 ```
 
 ### Performance
 
-- **Phase 1 (3 scenarios):** ~30-60 seconds
-- **Phase 2 (visualizations):** ~10-15 seconds  
+- **Phase 1 (3 A2/AD scenarios):** ~30-60 seconds
+- **Phase 2 (6 figures + 1 table):** ~10-15 seconds  
 - **Phase 3 (sensitivity analysis):** ~5-10 minutes
 
 **Total runtime:** ~6-12 minutes for complete analysis
 
-### System Requirements
+### Output Files
 
-- Python 3.7+
-- 4GB RAM minimum
-- Any modern OS (Windows/Mac/Linux)
+**CSV Files:**
+- `mothership_simulation_results.csv` - All iterations, all scenarios (~5 MB)
+- `summary_statistics.csv` - Mean/CI/metrics per scenario (~1 KB)
+- `sensitivity_analysis_results.csv` - Parameter sweep data (~500 KB)
+
+**Figures (300 DPI PNG):**
+- All figures 100-250 KB each
+- Professional quality for journal submission
+- Grayscale-compatible color schemes
 
 ---
 
-## Sections Questions?
+## Questions?
 
-Key sections:
+Key simulation components:
 
 - **Parameter definitions:** `define_parameters()` function
 - **Probability sampling:** `sample_*()` functions
-- **Core calculation:** `calculate_mission_success()` function
+- **Time calculations:** `calculate_mission_timeline()` function
+- **Time penalty:** `apply_time_exposure_penalty()` function
+- **Core success calculation:** `calculate_mission_success()` function
 - **Statistics:** `calculate_statistics()` function
 
+For detailed methodology, see inline comments in `mothership_simulation.py`.
 
+---
+
+## License & Citation
+
+This simulation was developed for academic research. When using in publications, please cite the methodology appropriately and acknowledge the Monte Carlo framework and A2/AD time exposure modeling.

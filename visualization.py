@@ -282,14 +282,15 @@ class SimulationVisualizer:
         
         data = self.results_df[self.results_df['scenario'] == scenario_name]
         
+        # Define parameters with proper LaTeX formatting for subscripts
         parameters = [
-            ('P_attrition_M', 'Mothership Attrition Probability', axes[0, 0]),
-            ('P_jamming_FPV', 'FPV Jamming Probability', axes[0, 1]),
-            ('P_hit', 'FPV Hit Probability', axes[1, 0]),
-            ('P_kill', 'Kill Probability Given Hit', axes[1, 1])
+            ('P_attrition_M', 'Mothership Attrition Probability', r'$P_{\mathrm{attrition},M}$', axes[0, 0]),
+            ('P_jamming_FPV', 'FPV Jamming Probability', r'$P_{\mathrm{jamming},FPV}$', axes[0, 1]),
+            ('P_hit', 'FPV Hit Probability', r'$P_{\mathrm{hit}}$', axes[1, 0]),
+            ('P_kill', 'Kill Probability Given Hit', r'$P_{\mathrm{kill}}$', axes[1, 1])
         ]
         
-        for param, title, ax in parameters:
+        for param, title, xlabel, ax in parameters:
             values = data[param].values
             
             ax.hist(values, bins=50, density=True, alpha=0.7, 
@@ -300,7 +301,7 @@ class SimulationVisualizer:
             ax.axvline(mean_val, color='red', linestyle='--', linewidth=2,
                       label=f'Mean = {mean_val:.3f}')
             
-            ax.set_xlabel(f'${param}$', fontweight='bold')
+            ax.set_xlabel(xlabel, fontweight='bold', fontsize=11)
             ax.set_ylabel('Probability Density', fontweight='bold')
             ax.set_title(title, fontweight='bold')
             ax.legend(loc='upper right', fontsize=8)
@@ -329,6 +330,16 @@ class SimulationVisualizer:
         table_data = stats_df[['scenario', 'mean', 'ci_lower', 'ci_upper', 
                                'E_K_mean', 'P_survival_mean']].copy()
         
+        # Shorten scenario names for table display
+        scenario_short_names = {
+            'Permissive Environment (Minimal A2/AD)': 'Permissive (Min A2/AD)',
+            'Contested A2/AD Environment': 'Contested A2/AD',
+            'Denied A2/AD Environment': 'Denied A2/AD'
+        }
+        table_data['scenario'] = table_data['scenario'].map(
+            lambda x: scenario_short_names.get(x, x)
+        )
+        
         table_data['mean_formatted'] = table_data.apply(
             lambda row: f"{row['mean']:.3f} ({row['ci_lower']:.3f}-{row['ci_upper']:.3f})",
             axis=1
@@ -343,7 +354,7 @@ class SimulationVisualizer:
                                 'Survival Prob.']
         
         # Create figure with table
-        fig, ax = plt.subplots(figsize=(10, 4))
+        fig, ax = plt.subplots(figsize=(12, 4))
         ax.axis('tight')
         ax.axis('off')
         
@@ -351,11 +362,11 @@ class SimulationVisualizer:
                         colLabels=display_table.columns,
                         cellLoc='center',
                         loc='center',
-                        colWidths=[0.25, 0.35, 0.2, 0.2])
+                        colWidths=[0.32, 0.35, 0.17, 0.16])  # Balanced proportions
         
         table.auto_set_font_size(False)
         table.set_fontsize(10)
-        table.scale(1, 2)
+        table.scale(1, 2.2)  # Increased row height slightly
         
         # Style header
         for i in range(len(display_table.columns)):
@@ -367,6 +378,9 @@ class SimulationVisualizer:
             for j in range(len(display_table.columns)):
                 if i % 2 == 0:
                     table[(i, j)].set_facecolor('#E8E8E8')
+                # Left-align scenario names (first column) for readability
+                if j == 0:
+                    table[(i, j)].set_text_props(ha='left')
         
         plt.title('Summary Statistics for Mothership UAV Scenarios', 
                  fontweight='bold', fontsize=12, pad=20)
