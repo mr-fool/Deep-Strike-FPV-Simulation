@@ -2,7 +2,6 @@
 Monte Carlo Simulation for Mothership UAV Deep Strike Analysis
 ================================================================
 
-
 This simulation models the operational effectiveness of carrier UAVs (motherships)
 deploying FPV drones for deep strike missions in Anti-Access/Area Denial (A2/AD)
 environments, comparing performance across threat scenarios and against traditional
@@ -366,7 +365,7 @@ class MonteCarloSimulation:
         
         # Calculate derived metrics
         N_FPV = scenario['N_FPV']
-        E_K = N_FPV * P_S * P_kill  # Expected kills
+        E_K = N_FPV * P_S  # Expected kills (P_kill already included in P_S)
         P_survival = 1 - P_attrition_M
         efficiency = E_K / N_FPV
         
