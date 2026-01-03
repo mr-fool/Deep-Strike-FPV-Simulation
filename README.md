@@ -104,9 +104,12 @@ This models the cumulative detection and engagement risk during extended loiter 
 ### Probabilistic Models
 
 **Mothership Vulnerability:**
-- Detection: P_detect = min(1.0, 0.3 + 0.4*(H/2000) + 0.3*ρ_AD) * visibility
+- Detection: P_detect = min(1.0, [0.3 + 0.4*(H/2000) + 0.3*ρ_AD] × RCS_factor × visibility)
+  - where RCS_factor = (RCS / 0.1)^0.25 (radar equation fourth-root relationship)
+  - Baseline RCS = 0.1 m² (moderately low-observable design)
 - Attrition | detected ~ Triangular(0.05, 0.15, 0.40)
 - Time exposure penalty: +1% per minute in A2/AD envelope
+- **Note:** In contested A2/AD, detection often saturates at 100% regardless of RCS
 
 **FPV Jamming:**
 - Radio-controlled: P_jamming ~ Uniform(0.5, 0.7)
@@ -190,45 +193,75 @@ The mothership shows **lower P_S** than ground-launched FPVs (0.34 vs 0.65) but 
 - Artillery: Medium P_S (~0.40), medium range (30 km), reveals battery position
 - Missiles: High P_S (~0.85), longest range (70 km), high cost ($150k/round)
 
+**Detection Saturation in A2/AD Environments:**  
+The simulation reveals that detection probability saturates near 100% in contested A2/AD environments (ρ_AD ≥ 2.0), making traditional survivability parameters (RCS, altitude) minimally effective. Once detected, survivability depends primarily on:
+1. **Jam-resistant guidance** (237% impact) - Dominant factor
+2. **Weather conditions** (70% impact on terminal effectiveness) - Secondary factor
+3. **Speed/time minimization** (40% impact via exposure reduction) - Tertiary factor
+
+This finding suggests that **electronic warfare resistance** and **mission speed** matter far more than low-observable design for carrier UAV platforms operating in modern A2/AD environments.
+
 ---
 
 ## Sensitivity Analysis Results
 
 The tornado diagram (fig6) and sensitivity curves (fig7) show parameter impacts on P_S:
 
-### Most Critical Parameters
+### Dominant Parameters
 
-**1. Guidance Type** (Dominant Factor)
-- Radio-controlled: P_S = 0.11 (heavy jamming vulnerability)
-- **Fiber-optic: P_S = 0.38** (jam-resistant, baseline)
-- AI-enabled: P_S = 0.31 (moderate jamming)
+**1. Guidance Type** (Critical Factor)
+- Radio-controlled: P_S = 0.10 (heavy jamming vulnerability)
+- **Fiber-optic: P_S = 0.34** (jam-resistant, baseline)
+- AI-enabled: P_S = 0.28 (moderate jamming)
 - **Impact: 237% improvement** (fiber vs radio)
+- **ΔP_S = 0.24** (Range: 0.10-0.34)
+
+### Moderate Sensitivity Parameters
 
 **2. Wind Speed** (Environmental)
-- 0-20 km/h: P_S ≈ 0.38 (stable performance)
-- 30 km/h: P_S = 0.26 (degraded, 30% reduction)
-- 40 km/h: P_S = 0.23 (severe degradation)
+- 0-20 km/h: P_S ≈ 0.34 (stable performance)
+- 30 km/h: P_S = 0.31 (degraded, 10% reduction)
+- 40 km/h: P_S = 0.27 (severe degradation, 20% reduction)
+- **ΔP_S = 0.07** (Range: 0.27-0.34)
 
-**3. Air Defense Density** (Moderate Impact)
-- Low (0.5/100km²): P_S = 0.39, Survival = 0.83
-- Medium (2.0/100km²): P_S = 0.38, Survival = 0.80
-- High (5.0/100km²): P_S = 0.38, Survival = 0.80
+### Minimally Sensitive Parameters
 
-### Less Sensitive Parameters
+**3. Mothership Range** (Indirect Time Exposure Impact)
+- 60 km: P_S = 0.36
+- 120 km: P_S = 0.34 (baseline)
+- 200 km: P_S = 0.32
+- Longer range increases A2/AD exposure time
+- **ΔP_S = 0.04** (Range: 0.32-0.36)
 
-**4. Operational Altitude** (Minimal Direct Impact)
+**4. Air Defense Density** (Minimal Impact - Detection Saturated)
+- Low (0.5/100km²): P_S = 0.36, Survival = 0.77
+- Medium (2.0/100km²): P_S = 0.34, Survival = 0.73
+- High (5.0/100km²): P_S = 0.34, Survival = 0.72
+- Detection probability already near 100% in contested environments
+- **ΔP_S = 0.02** (Range: 0.34-0.36)
+
+**5. RCS/Stealth** (Minimal Impact - Detection Saturated)
+- Stealth (0.01 m²): P_S = 0.36, Survival = 0.77
+- Low-observable (0.05 m²): P_S = 0.34, Survival = 0.73
+- Baseline (0.10 m²): P_S = 0.34, Survival = 0.72
+- Conventional (0.50 m²): P_S = 0.34, Survival = 0.73
+- Large UAV (1.00 m²): P_S = 0.34, Survival = 0.73
+- **ΔP_S = 0.02** (Range: 0.34-0.36)
+- **Key Finding:** Detection model saturated in A2/AD environments; stealth provides marginal 5% benefit
+
+**6. Operational Altitude** (Negligible Direct Impact)
 - 1000m to 3000m: P_S varies by <1%
 - Higher altitude increases detection but improves standoff
+- **ΔP_S < 0.01** (Range: 0.341-0.343)
 
-**5. Mothership Range** (No Direct Impact on P_S)
-- Affects mission feasibility, not individual success rate
-- Longer range = more exposure time (indirect impact)
+### Parameters Not Affecting P_S
 
-**6. FPV Count** (Affects Total Kills, Not P_S)
-- 2 FPVs: E[K] = 0.75
-- 5 FPVs: E[K] = 1.89
-- 10 FPVs: E[K] = 3.77
-- P_S remains constant (~0.38) regardless of payload
+**7. FPV Count** (Affects Total Kills, Not Success Rate)
+- 2 FPVs: E[K] = 0.69
+- 5 FPVs: E[K] = 1.71
+- 10 FPVs: E[K] = 3.39
+- P_S remains constant (~0.34) regardless of payload
+- **ΔP_S = 0** (No impact on mission success probability)
 
 ---
 

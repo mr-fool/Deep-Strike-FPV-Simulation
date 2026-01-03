@@ -242,6 +242,52 @@ class SensitivityAnalyzer:
         
         return pd.DataFrame(results)
     
+    def analyze_rcs(self, rcs_values: list = None) -> pd.DataFrame:
+        """
+        Analyze sensitivity to mothership radar cross section (stealth).
+        
+        Lower RCS = harder to detect = higher survivability
+        
+        Args:
+            rcs_values: List of RCS values to test (m²)
+        """
+        if rcs_values is None:
+            # Test from stealthy to conventional
+            # 0.01 = stealth, 0.1 = baseline, 1.0 = conventional
+            rcs_values = [0.01, 0.05, 0.1, 0.5, 1.0]
+        
+        print("\nAnalyzing sensitivity to RCS (STEALTH)...")
+        results = []
+        
+        for rcs in rcs_values:
+            scenario = self.base_scenario.copy()
+            scenario['mothership']['RCS'] = rcs
+            
+            res_df = self.sim.run_scenario(scenario, target_type='armor')
+            stats = self.sim.calculate_statistics(res_df)
+            
+            results.append({
+                'parameter': 'RCS',
+                'value': rcs,
+                'P_S_mean': stats['mean'],
+                'P_S_std': stats['std'],
+                'ci_lower': stats['ci_lower'],
+                'ci_upper': stats['ci_upper'],
+                'P_survival_mean': stats['P_survival_mean']
+            })
+            
+            # Classify stealth level
+            if rcs <= 0.02:
+                stealth_level = "stealth"
+            elif rcs <= 0.15:
+                stealth_level = "low-observable"
+            else:
+                stealth_level = "conventional"
+                
+            print(f"  RCS = {rcs:.3f} m² ({stealth_level}) → P_S = {stats['mean']:.3f}, P_survival = {stats['P_survival_mean']:.3f}")
+        
+        return pd.DataFrame(results)
+    
     def run_full_sensitivity_analysis(self) -> dict:
         """
         Run complete sensitivity analysis for all parameters.
@@ -259,7 +305,8 @@ class SensitivityAnalyzer:
             'ad_density': self.analyze_ad_density(),
             'guidance': self.analyze_guidance_type(),
             'altitude': self.analyze_altitude(),
-            'wind': self.analyze_wind_speed()
+            'wind': self.analyze_wind_speed(),
+            'rcs': self.analyze_rcs()
         }
         
         self.results = results
@@ -309,6 +356,7 @@ class SensitivityAnalyzer:
         params = coef_df['parameter'].values
         param_labels = {
             'guidance': 'Guidance Type',
+            'rcs': 'RCS (Stealth)',
             'ad_density': 'AD Density (ρ_AD)',
             'altitude': 'Operational Altitude',
             'wind': 'Wind Speed',

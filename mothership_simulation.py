@@ -153,7 +153,10 @@ class MonteCarloSimulation:
         """
         Sample mothership detection and attrition probabilities.
         
-        Model: P_detect = min(1.0, 0.3 + 0.4*(H_M/2000) + 0.3*ρ_AD) × visibility
+        Model: P_detect = min(1.0, base_detect × RCS_factor × visibility)
+        where base_detect = 0.3 + 0.4*(H_M/2000) + 0.3*ρ_AD
+        and RCS_factor = (RCS/0.1)^0.25 (radar equation fourth-root relationship)
+        
         P_attrition | detected ~ Triangular(0.05, 0.15, 0.40)
         
         Args:
@@ -165,10 +168,16 @@ class MonteCarloSimulation:
         H_M = scenario['mothership']['H_M_op']
         rho_AD = scenario['rho_AD']
         vis = scenario['visibility']
+        RCS = scenario['mothership']['RCS']
         
-        # Detection probability model
+        # Detection probability model with RCS
         base_detect = 0.3 + 0.4 * (H_M / 2000) + 0.3 * rho_AD
-        P_detect = np.minimum(1.0, base_detect * vis)
+        
+        # RCS factor: normalized to 0.1 m² baseline
+        # Smaller RCS = harder to detect (fourth-root from radar equation)
+        RCS_factor = (RCS / 0.1) ** 0.25
+        
+        P_detect = np.minimum(1.0, base_detect * RCS_factor * vis)
         P_detect = np.repeat(P_detect, self.n_iterations)
         
         # Attrition given detection - Triangular distribution
