@@ -30,6 +30,9 @@ class SensitivityAnalyzer:
     Perform sensitivity analysis on mothership simulation.
     
     Uses one-at-a-time (OAT) methodology to isolate parameter impacts.
+    Random seed is reset before each scenario run to ensure all parameter
+    values are evaluated against identical random draws, making comparisons
+    fair and results fully reproducible.
     """
     
     def __init__(self, base_scenario: dict, n_iterations: int = 10000):
@@ -59,6 +62,7 @@ class SensitivityAnalyzer:
         results = []
         
         for R_M_max in ranges:
+            np.random.seed(self.sim.random_seed)  # Reset seed: ensures identical random draws per parameter value
             scenario = self.base_scenario.copy()
             scenario['mothership']['R_M_max'] = R_M_max
             # CRITICAL FIX: Update target_distance to match new range
@@ -94,6 +98,7 @@ class SensitivityAnalyzer:
         results = []
         
         for N_FPV in counts:
+            np.random.seed(self.sim.random_seed)  # Reset seed: ensures identical random draws per parameter value
             scenario = self.base_scenario.copy()
             scenario['N_FPV'] = N_FPV
             
@@ -127,6 +132,7 @@ class SensitivityAnalyzer:
         results = []
         
         for rho_AD in densities:
+            np.random.seed(self.sim.random_seed)  # Reset seed: ensures identical random draws per parameter value
             scenario = self.base_scenario.copy()
             scenario['rho_AD'] = rho_AD
             
@@ -160,6 +166,7 @@ class SensitivityAnalyzer:
         results = []
         
         for guidance in types:
+            np.random.seed(self.sim.random_seed)  # Reset seed: ensures identical random draws per parameter value
             scenario = self.base_scenario.copy()
             scenario['guidance_type'] = guidance
             
@@ -192,6 +199,7 @@ class SensitivityAnalyzer:
         results = []
         
         for H_M_op in altitudes:
+            np.random.seed(self.sim.random_seed)  # Reset seed: ensures identical random draws per parameter value
             scenario = self.base_scenario.copy()
             scenario['mothership']['H_M_op'] = H_M_op
             
@@ -224,6 +232,7 @@ class SensitivityAnalyzer:
         results = []
         
         for V_wind in wind_speeds:
+            np.random.seed(self.sim.random_seed)  # Reset seed: ensures identical random draws per parameter value
             scenario = self.base_scenario.copy()
             scenario['V_wind'] = V_wind
             
@@ -260,6 +269,7 @@ class SensitivityAnalyzer:
         results = []
         
         for rcs in rcs_values:
+            np.random.seed(self.sim.random_seed)  # Reset seed: ensures identical random draws per parameter value
             scenario = self.base_scenario.copy()
             scenario['mothership']['RCS'] = rcs
             
@@ -496,6 +506,7 @@ def main():
     print("\n" + "="*70)
     print("CALCULATING BASELINE P_S FOR SENSITIVITY ANALYSIS")
     print("="*70)
+    np.random.seed(sim.random_seed)  # Reset seed before baseline calculation
     baseline_df = sim.run_scenario(base_scenario, target_type='armor')
     baseline_stats = sim.calculate_statistics(baseline_df)
     baseline_P_S = baseline_stats['mean']
