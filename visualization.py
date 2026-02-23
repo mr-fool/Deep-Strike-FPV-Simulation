@@ -435,9 +435,9 @@ def main():
     # Create baseline comparison (hardcoded for now, will integrate with main sim)
     comparison_data = {
         'method': ['Mothership + FPV', 'Ground-launched FPV', 'Artillery', 'Precision Missile'],
-        'mean_P_S': [0.38, 0.65, 0.40, 0.85],
-        'ci_lower': [0.20, 0.54, 0.33, 0.74],
-        'ci_upper': [0.56, 0.77, 0.60, 0.95],
+        'mean_P_S': [0.38, 0.45, 0.40, 0.85],
+        'ci_lower': [0.20, 0.20, 0.33, 0.74],
+        'ci_upper': [0.56, 0.65, 0.60, 0.95],
         'max_range_km': [130, 8, 30, 70]
     }
     comparison_df = pd.DataFrame(comparison_data)
