@@ -432,12 +432,19 @@ def main():
     results_df = pd.read_csv('outputs/mothership_simulation_results.csv')
     stats_df = pd.read_csv('outputs/summary_statistics.csv')
     
-    # Create baseline comparison (hardcoded for now, will integrate with main sim)
+    # Pull mothership values dynamically from contested scenario row of summary_statistics.csv
+    # so these never go out of sync with simulation output
+    contested = stats_df[stats_df['scenario'].str.contains('Contested', case=False)].iloc[0]
+    ms_mean  = round(float(contested['mean']),     3)
+    ms_lower = round(float(contested['ci_lower']), 3)
+    ms_upper = round(float(contested['ci_upper']), 3)
+
+    # Comparison values for external systems are planning assumptions (see Table 4 footnote)
     comparison_data = {
         'method': ['Mothership + FPV', 'Ground-launched FPV', 'Artillery', 'Precision Missile'],
-        'mean_P_S': [0.38, 0.45, 0.40, 0.85],
-        'ci_lower': [0.20, 0.20, 0.33, 0.74],
-        'ci_upper': [0.56, 0.65, 0.60, 0.95],
+        'mean_P_S': [ms_mean, 0.45, 0.40, 0.85],
+        'ci_lower': [ms_lower, 0.20, 0.30, 0.70],
+        'ci_upper': [ms_upper, 0.65, 0.60, 0.95],
         'max_range_km': [130, 8, 30, 70]
     }
     comparison_df = pd.DataFrame(comparison_data)
