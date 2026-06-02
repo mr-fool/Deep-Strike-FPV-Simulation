@@ -453,7 +453,7 @@ class SensitivityAnalyzer:
                         fontweight='bold')
             ax.grid(True, alpha=0.3)
             ax.legend(loc='best', fontsize=8)
-            ax.set_ylim(0, 0.8)
+            ax.set_ylim(0, 0.5)
         
         # Handle guidance type separately (categorical)
         if 'guidance' in self.results:
@@ -471,7 +471,7 @@ class SensitivityAnalyzer:
             ax.set_xlabel('Guidance Type', fontweight='bold')
             ax.set_title('Sensitivity to Guidance Type', fontweight='bold')
             ax.grid(True, alpha=0.3, axis='y')
-            ax.set_ylim(0, 0.8)
+            ax.set_ylim(0, 0.5)
         
         fig.suptitle('Parameter Sensitivity Curves - Medium Threat Baseline',
                     fontweight='bold', fontsize=14, y=0.995)

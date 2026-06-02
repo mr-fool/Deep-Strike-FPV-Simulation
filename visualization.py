@@ -94,7 +94,8 @@ class SimulationVisualizer:
         ax.set_title('Mission Success Rate Distribution by Threat Level', 
                     fontweight='bold', pad=15)
         ax.grid(True, alpha=0.3, axis='y')
-        ax.set_ylim(0, 1)
+        ax.set_ylim(0, 0.8)
+        ax.legend(bp['boxes'], scenarios, loc='upper right', fontsize=8)
         
         # Add sample size annotation
         ax.text(0.02, 0.98, f'n = {len(data_to_plot[0]):,} iterations per scenario',
@@ -116,7 +117,7 @@ class SimulationVisualizer:
         
         Shows the probability of achieving various P_S thresholds.
         """
-        fig, ax = plt.subplots(figsize=(8, 6))
+        fig, ax = plt.subplots(figsize=(8, 4))
         
         scenarios = self.results_df['scenario'].unique()
         
@@ -134,7 +135,7 @@ class SimulationVisualizer:
                     fontweight='bold', pad=15)
         ax.legend(loc='lower right', framealpha=0.9)
         ax.grid(True, alpha=0.3)
-        ax.set_xlim(0, 1)
+        ax.set_xlim(0, 0.8)
         ax.set_ylim(0, 1)
         
         plt.tight_layout()
