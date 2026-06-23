@@ -173,16 +173,18 @@ class SimulationVisualizer:
         
         ax1.set_ylabel('Mean Mission Success Rate ($P_S$)', fontweight='bold')
         ax1.set_title('Strike Method Performance Comparison', fontweight='bold', pad=15)
-        ax1.set_ylim(0, 1)
+        ax1.set_ylim(0, 1.1)
         ax1.grid(True, alpha=0.3, axis='y')
         ax1.set_xticklabels(methods, rotation=15, ha='right')
         
-        # Add value labels on bars
-        for bar, mean in zip(bars, means):
-            height = bar.get_height()
-            ax1.text(bar.get_x() + bar.get_width()/2., height,
+        # Add value labels above the top whisker (ci_upper) to avoid overlap
+        for bar, mean, upper in zip(bars, means, ci_upper):
+            label_y = min(upper + 0.02, 1.07)  # cap so label stays inside plot
+            ax1.text(bar.get_x() + bar.get_width()/2., label_y,
                     f'{mean:.2f}',
-                    ha='center', va='bottom', fontweight='bold', fontsize=9)
+                    ha='center', va='bottom', fontweight='bold', fontsize=9,
+                    bbox=dict(boxstyle='round,pad=0.1', facecolor='white',
+                              edgecolor='none', alpha=0.8))
         
         # Plot 2: Range vs Effectiveness scatter
         ranges = comparison_df['max_range_km'].values
